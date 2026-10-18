@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CHRONOS — futuristik 3D taymer</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <canvas id="three-canvas"></canvas>
+
+  <div id="app">
+    <!-- Yuqori panel -->
+    <header class="glass-panel header">
+      <div class="logo">⏳ CHRONOS</div>
+      <div class="header-actions">
+        <div class="lang-switch" id="langSwitch">
+          <button class="lang-btn active" data-lang="uz">UZ</button>
+          <button class="lang-btn" data-lang="ru">RU</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <button id="themeToggle" class="icon-btn" data-i18n-title="themeTitle" title="Rejim">🌙</button>
+        <button id="soundToggle" class="icon-btn" data-i18n-title="soundTitle" title="Ovoz">🔊</button>
+        <button id="fullscreenBtn" class="icon-btn" data-i18n-title="fullscreenTitle" title="To‘liq ekran">⛶</button>
+      </div>
+    </header>
+
+    <!-- Asosiy panellar -->
+    <main class="main-grid">
+      <!-- Chap ustun -->
+      <section class="left-column">
+        <div class="glass-panel clock-panel">
+          <div id="liveClock" class="live-clock">00:00:00</div>
+          <div id="liveDate" class="live-date">—</div>
+        </div>
+
+        <div class="glass-panel stats-panel">
+          <h3 data-i18n="statsTitle">📊 Statistika</h3>
+          <div class="stat-row"><span data-i18n="statSessions">Bajarilgan sessiyalar:</span> <strong id="statSessions">0</strong></div>
+          <div class="stat-row"><span data-i18n="statFocus">Umumiy fokus vaqti:</span> <strong id="statFocus">0 daqiqa</strong></div>
+          <div class="stat-row"><span data-i18n="statGoal">Kunlik maqsad:</span> <strong id="statGoal">0 / 120 daqiqa</strong></div>
+          <div class="stat-row"><span data-i18n="statRecord">Rekord sessiya:</span> <strong id="statRecord">0 daqiqa</strong></div>
+          
+          <!-- Daily Goal Setting -->
+          <div class="goal-setting">
+            <label for="dailyGoalInput" data-i18n="goalInputLabel">Kunlik maqsad (daqiqa):</label>
+            <div class="goal-input-row">
+              <input type="number" id="dailyGoalInput" min="5" max="600" value="120">
+              <button id="saveGoalBtn" class="small-btn" data-i18n="saveGoalBtn">Saqlash</button>
+            </div>
+          </div>
+          
+          <button id="resetStatsBtn" class="small-btn" data-i18n="resetStats">Statistikani tozalash</button>
+        </div>
+
+        <!-- Time Garden (3D Tree) -->
+        <div class="glass-panel garden-panel">
+          <h3 data-i18n="gardenTitle">🌱 Vaqt bog'i</h3>
+          <p class="garden-desc" data-i18n="gardenDesc">Har bir tugallangan fokus sessiyasi yangi barg ochadi.</p>
+          <div id="gardenProgressContainer" class="garden-progress-container">
+            <div class="garden-progress-bar"><div id="gardenProgressFill" class="garden-progress-fill"></div></div>
+            <div class="garden-progress-text" id="gardenGoalText">0 / 120 daqiqa</div>
+          </div>
+        </div>
+
+        <div class="glass-panel volume-panel">
+          <label for="volumeSlider" data-i18n="volumeLabel">🔉 Ovoz balandligi</label>
+          <input type="range" id="volumeSlider" min="0" max="100" value="70">
+        </div>
+      </section>
+
+      <!-- Markaziy ustun -->
+      <section class="center-column">
+        <div class="glass-panel timer-panel">
+          <div id="timerDisplay" class="timer-display">25:00</div>
+          <div id="timerStatus" class="timer-status">Pomodoro tayyor</div>
+          <div class="timer-controls">
+            <button id="startBtn" class="ctrl-btn start" data-i18n="startBtn">▶ Boshlash</button>
+            <button id="pauseBtn" class="ctrl-btn" disabled data-i18n="pauseBtn">⏸ Pauza</button>
+            <button id="resumeBtn" class="ctrl-btn" disabled data-i18n="resumeBtn">⏵ Davom</button>
+            <button id="resetBtn" class="ctrl-btn" data-i18n="resetBtn">↺ Qayta</button>
+          </div>
+          <div class="preset-row">
+            <button class="preset-btn" data-mode="pomodoro" data-min="25" data-i18n="presetPomodoro">🍅 Pomodoro 25</button>
+            <button class="preset-btn" data-mode="pomodoro" data-min="5" data-i18n="presetBreak">☕ Tanaffus 5</button>
+            <button class="preset-btn" data-mode="countdown" data-min="10">⏳ 10</button>
+            <button class="preset-btn" data-mode="countdown" data-min="30">⏳ 30</button>
+            <button class="preset-btn" data-mode="countdown" data-min="60">⏳ 60</button>
+          </div>
+          <div class="custom-time">
+            <input type="number" id="customMinutes" min="1" max="180" value="25" placeholder="Daqiqa">
+            <button id="setCustomBtn" class="small-btn" data-i18n="setCustomBtn">Vaqtni sozlash</button>
+          </div>
+        </div>
+
+        <!-- Rejim tugmalari -->
+        <div class="glass-panel mode-panel">
+          <button class="mode-tab active" data-mode="pomodoro" data-i18n="modePomodoro">🍅 Pomodoro</button>
+          <button class="mode-tab" data-mode="countdown" data-i18n="modeCountdown">⏳ Countdown</button>
+          <button class="mode-tab" data-mode="stopwatch" data-i18n="modeStopwatch">⏱ Sekundomer</button>
+          <button class="mode-tab" data-mode="interval" data-i18n="modeInterval">🔄 Intervallar</button>
+          <button class="mode-tab" data-mode="event" data-i18n="modeEvent">🎯 Voqea</button>
+        </div>
+      </section>
+
+      <!-- O'ng ustun -->
+      <section class="right-column">
+        <div class="glass-panel event-panel" id="eventPanel">
+          <h3 data-i18n="eventTitle">🎯 Kelajak kapsulalari</h3>
+          <div class="event-inputs">
+            <input type="text" id="eventName" data-i18n-ph="eventNamePh" placeholder="Voqea nomi (IELTS, tug'ilgan kun...)">
+            <input type="datetime-local" id="eventDate">
+            <button id="setEventBtn" class="small-btn" data-i18n="setEventBtn">Kapsulani saqlash</button>
+          </div>
+          <div id="capsulesList" class="capsules-list"></div>
+        </div>
+
+        <div class="glass-panel info-panel">
+          <h3 data-i18n="shortcutsTitle">⌨️ Klaviatura yorliqlari</h3>
+          <ul class="shortcuts">
+            <li><kbd>Space</kbd> — <span data-i18n="shortcutSpace">Boshlash/Pauza</span></li>
+            <li><kbd>R</kbd> — <span data-i18n="shortcutR">Qayta boshlash</span></li>
+            <li><kbd>S</kbd> — <span data-i18n="shortcutS">Sekundomer</span></li>
+            <li><kbd>P</kbd> — <span data-i18n="shortcutP">Pomodoro</span></li>
+            <li><kbd>T</kbd> — <span data-i18n="shortcutT">Rejim almashtirish</span></li>
+            <li><kbd>F</kbd> — <span data-i18n="shortcutF">To‘liq ekran</span></li>
+          </ul>
+        </div>
+        <div class="glass-panel info-panel">
+          <h3 data-i18n="modeInfoTitle">ℹ️ Rejim haqida</h3>
+          <p id="modeDescription">Pomodoro: 25 daqiqa fokus, so‘ng 5 daqiqa tanaffus.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="glass-panel footer">
+      <span data-i18n="footerText">CHRONOS — vaqtni boshqarish san’ati</span>
+      <span id="footerTime"></span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
